@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GitHub Events</title>
+</head>
+<body>
+  <h2>GitHub Activity</h2>
+  <ul id="events"></ul>
+
+  <script>
+    let lastTimestamp = null;
+
+    async function fetchEvents() {
+      let url = "http://127.0.0.1:5000/events";
+      if (lastTimestamp) {
+        url += "?since=" + encodeURIComponent(lastTimestamp);
+      }
+
+      const res = await fetch(url);
+      const data = await res.json();
+
+      const list = document.getElementById("events");
+
+      data.forEach(event => {
+        const li = document.createElement("li");
+
+        if (event.action === "PUSH") {
+          li.innerText = `${event.author} pushed to ${event.to_branch} on ${event.timestamp}`;
+        }
+
+        if (event.action === "PULL_REQUEST") {
+          li.innerText = `${event.author} submitted a pull request from ${event.from_branch} to ${event.to_branch} on ${event.timestamp}`;
+        }
+
+        if (event.action === "MERGE") {
+          li.innerText = `${event.author} merged branch ${event.from_branch} to ${event.to_branch} on ${event.timestamp}`;
+        }
+
+        list.appendChild(li);
+        lastTimestamp = event.timestamp;
+      });
+    }
+
+    fetchEvents();
+    setInterval(fetchEvents, 15000);
+  </script>
+</body>
+</html>
